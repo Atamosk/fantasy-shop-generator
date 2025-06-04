@@ -1,2 +1,9 @@
-# fantasy-shop-generator
+# Fantasy Shop Generator
+
+## About
+
 Generate shop inventories compatible with pen and paper RPGs
+
+## Fan Content
+
+The Fantasy Shop Generator is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.
