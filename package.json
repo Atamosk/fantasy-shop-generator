@@ -1,0 +1,19 @@
+{
+  "name": "fantasy-shop-generator",
+  "version": "1.0.0",
+  "description": "Generate shop inventories compatible with pen and paper RPGs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mgaydash/fantasy-shop-generator.git"
+  },
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/mgaydash/fantasy-shop-generator/issues"
+  },
+  "homepage": "https://github.com/mgaydash/fantasy-shop-generator#readme"
+}
