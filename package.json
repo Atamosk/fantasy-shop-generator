@@ -2,9 +2,9 @@
     "name": "fantasy-shop-generator",
     "version": "1.0.0",
     "description": "Generate shop inventories compatible with pen and paper RPGs",
-    "main": "app.js",
+    "main": "./src/app/app.js",
     "scripts": {
-        "test": "echo 'Error: no test specified' && exit 1"
+        "test": "./src/test/test.js"
     },
     "repository": {
         "type": "git",
