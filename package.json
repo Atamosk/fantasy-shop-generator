@@ -9,12 +9,12 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/mgaydash/fantasy-shop-generator.git"
+        "url": "git+https://github.com/Atamosk/fantasy-shop-generator.git"
     },
     "author": "",
     "license": "GPL-3.0-or-later",
     "bugs": {
-        "url": "https://github.com/mgaydash/fantasy-shop-generator/issues"
+        "url": "https://github.com/Atamosk/fantasy-shop-generator/issues"
     },
-    "homepage": "https://github.com/mgaydash/fantasy-shop-generator#readme"
+    "homepage": "https://github.com/Atamosk/fantasy-shop-generator#readme"
 }
