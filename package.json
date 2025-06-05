@@ -4,7 +4,8 @@
     "description": "Generate shop inventories compatible with pen and paper RPGs",
     "main": "./src/app/app.js",
     "scripts": {
-        "test": "./src/test/test.js"
+        "start": "node ./src/app/app.js",
+        "test": "node ./src/test/test.js"
     },
     "repository": {
         "type": "git",
