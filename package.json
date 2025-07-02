@@ -16,5 +16,8 @@
     "bugs": {
         "url": "https://github.com/Atamosk/fantasy-shop-generator/issues"
     },
-    "homepage": "https://github.com/Atamosk/fantasy-shop-generator#readme"
+    "homepage": "https://github.com/Atamosk/fantasy-shop-generator#readme",
+    "dependencies": {
+        "alasql": "^4.6.6"
+    }
 }
