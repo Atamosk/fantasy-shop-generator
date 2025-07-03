@@ -1,14 +1,6 @@
 const alasql = require('alasql');
 const itemList = require("../data/items.json");
 
-let returnArray = [];
-itemList.forEach(element => {
-    if (element.type == "Combat")
-    {
-        returnArray.push(element.name);
-    }
-});
+var res = alasql("SELECT * FROM ? WHERE price <= '10'", [itemList]);
 
-// SELECT item WHERE type = 'Combat';
-
-console.log(returnArray);
+console.log(res);
