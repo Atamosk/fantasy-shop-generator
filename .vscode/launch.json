@@ -20,11 +20,11 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug",
+            "name": "Debug Current File",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/src/app/app.js",
+            "program": "${file}",
             "console": "integratedTerminal"
         }
     ]
