@@ -5,9 +5,22 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Debug via NPM",
+            "request": "launch",
+            "runtimeArgs": [
+                "start"
+            ],
+            "runtimeExecutable": "npm",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node",
+            "console": "integratedTerminal"
+        },
+        {
             "type": "node",
             "request": "launch",
-            "name": "Run and Debug",
+            "name": "Debug",
             "skipFiles": [
                 "<node_internals>/**"
             ],
