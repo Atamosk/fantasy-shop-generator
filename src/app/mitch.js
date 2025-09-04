@@ -4,6 +4,7 @@ const itemList = require("../data/items.json");
 const dnd_items = require('dnd-data').items;
 const dnd_spells = require('dnd-data').spells;
 
+// Items
 console.log("Unique Types")
 console.log(alasql("SELECT DISTINCT type FROM ?", [itemList]));
 
@@ -28,6 +29,7 @@ console.log(alasql("SELECT DISTINCT properties->('Item Type') FROM ?", [dnd_item
 console.log("dnd-items Potions")
 console.log(alasql("SELECT * FROM ? WHERE properties->('Item Type') = 'Potion'", [dnd_items]));
 
+// Spells
 console.log("1 Spell")
 console.log(alasql("SELECT * FROM ? LIMIT 1", [dnd_spells]));
 
@@ -35,4 +37,13 @@ console.log("All Schools")
 console.log(alasql("SELECT DISTINCT properties->School FROM ?", [dnd_spells]));
 
 console.log("Conjuration Spells")
-console.log(alasql("SELECT * FROM ? WHERE LOWER(properties->School) LIKE '%conjuration%'", [dnd_spells]));
+console.log(alasql("SELECT * FROM ? WHERE LOWER(properties->School) LIKE '%conjuration%' and properties->Level = 3", [dnd_spells]));
+
+console.log("DND Book")
+console.log(alasql("SELECT DISTINCT book FROM ?", [dnd_spells]));
+
+console.log("Wizards Books Spells")
+console.log(alasql("SELECT COUNT(*) FROM ? WHERE LOWER(properties->School) LIKE '%conjuration%' AND properties->Level = 3 AND publisher = 'Wizards of the Coast'", [dnd_spells]));
+
+console.log("PHB Spells")
+console.log(alasql("SELECT * FROM ? WHERE LOWER(properties->School) LIKE '%conjuration%' AND properties->Level = 3 AND book LIKE 'Player''s Handbook%'", [dnd_spells]));
