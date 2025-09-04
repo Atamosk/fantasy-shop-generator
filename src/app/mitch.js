@@ -47,3 +47,26 @@ console.log(alasql("SELECT COUNT(*) FROM ? WHERE LOWER(properties->School) LIKE 
 
 console.log("PHB Spells")
 console.log(alasql("SELECT * FROM ? WHERE LOWER(properties->School) LIKE '%conjuration%' AND properties->Level = 3 AND book LIKE 'Player''s Handbook%'", [dnd_spells]));
+
+// How to build a unique spell list from multiple books:
+//   - Start with an empty collection
+//   - Beginning with the lowest priority book, add spells to the collection, indexed by spell name
+//   - Add spells from higher priority books to the collection, replacing spells with the same name from lower prioroty books
+//   - Continue until finished addiing spells from the highest priority book
+
+console.log("Parameterized Query")
+// I've hacked on this and can't get it to work.
+// const sql = "SELECT * FROM ? WHERE LOWER(properties->School) LIKE '%?%' AND properties->Level = ? AND publisher = '?'"
+// console.log(alasql.exec(sql, [spells, school, level, publisher]));
+const spells = dnd_spells
+const school = "conjuration";
+const level = 3;
+const publisher = "Wizards of the Coast"
+const sql = `
+    SELECT COUNT(*) FROM ? WHERE
+    LOWER(properties->School) LIKE '%${school}%' AND
+    properties->Level = ${level} AND
+    publisher = '${publisher}'
+`
+console.log(alasql.exec(sql, [spells]));
+console.log("Done")
