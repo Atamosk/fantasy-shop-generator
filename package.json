@@ -18,6 +18,7 @@
     },
     "homepage": "https://github.com/Atamosk/fantasy-shop-generator#readme",
     "dependencies": {
-        "alasql": "^4.6.6"
+        "alasql": "^4.6.6",
+        "dnd-data": "^1.0.0"
     }
 }
