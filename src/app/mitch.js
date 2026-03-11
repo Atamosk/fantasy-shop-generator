@@ -50,7 +50,7 @@ console.log(alasql("SELECT * FROM ? WHERE LOWER(properties->School) LIKE '%conju
 
 // How to build a unique spell list from multiple books:
 //   - Start with an empty collection
-//   - Beginning with the lowest priority book, add spells to the collection, indexed by spell name
+//   - Beginning with the lowest priority book, add spells to the collection, indexed by spell name, lower-case
 //   - Add spells from higher priority books to the collection, replacing spells with the same name from lower prioroty books
 //   - Continue until finished addiing spells from the highest priority book
 
