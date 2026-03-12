@@ -1,6 +1,9 @@
 const spells = require("./spells");
+const scrolls = require("./scrolls");
 
 const uniqueSpells = spells.buildSpellList(spells.dndSpells);
-const conjurationSpells = spells.filterSpells(uniqueSpells, { school: 'conjuration', level: 1 });
-console.log(conjurationSpells);
+const scrollList = scrolls.buildScrollList(uniqueSpells);
 
+const filteredScrolls = scrolls.filterScrolls(scrollList, { maxPrice: 100, school: "Evocation" });
+
+console.log("xyz");
