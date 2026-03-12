@@ -64,18 +64,52 @@ function buildSpellList(spells, bookList = DEFAULT_BOOK_LIST) {
     );
 }
 
-// TODO: Add school normalization helper to handle variants like "Conjuration (Shadow)",
-//       "conjuration", "Abjuration (Ritual; Angelic)" -> base school only
+// Base schools of magic
+const BASE_SCHOOLS = [
+    'abjuration',
+    'conjuration',
+    'divination',
+    'enchantment',
+    'evocation',
+    'illusion',
+    'necromancy',
+    'transmutation'
+];
+
+/**
+ * Normalize a school string to its base school.
+ * Handles variants like "Conjuration (Shadow)", "Abjuration (Ritual; Angelic)" -> base school only.
+ *
+ * @param {string} school - Raw school string from spell data
+ * @returns {string|null} Lowercase base school name, or null if not recognized
+ */
+function normalizeSchool(school) {
+    if (!school) return null;
+    const lower = school.toLowerCase();
+    for (const base of BASE_SCHOOLS) {
+        if (lower.startsWith(base)) {
+            return base;
+        }
+    }
+    // Handle alternate spellings/typos in data (e.g., "Enchanment")
+    if (lower.startsWith('enchan')) return 'enchantment';
+    if (lower.startsWith('alteration')) return 'transmutation';
+    return null;
+}
 
 /**
  * Filter spells by various criteria using native JS methods
  */
 function filterSpells(spells, criteria = {}) {
     const { school, level, publisher, name } = criteria;
+    const normalizedSchoolCriteria = school ? normalizeSchool(school) : null;
 
     return spells.filter(spell => {
-        if (school && spell.properties?.School?.toLowerCase() !== school.toLowerCase()) {
-            return false;
+        if (normalizedSchoolCriteria) {
+            const spellSchool = normalizeSchool(spell.properties?.School);
+            if (spellSchool !== normalizedSchoolCriteria) {
+                return false;
+            }
         }
         if (level !== undefined && spell.properties?.Level !== level) {
             return false;
@@ -108,6 +142,8 @@ module.exports = {
     buildSpellList,
     filterSpells,
     getDistinctValues,
+    normalizeSchool,
+    BASE_SCHOOLS,
     DEFAULT_BOOK_LIST,
     dndSpells
 };
