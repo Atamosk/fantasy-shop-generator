@@ -142,8 +142,6 @@ module.exports = {
     buildSpellList,
     filterSpells,
     getDistinctValues,
-    normalizeSchool,
-    BASE_SCHOOLS,
     DEFAULT_BOOK_LIST,
     dndSpells
 };
