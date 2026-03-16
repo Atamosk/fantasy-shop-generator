@@ -1,0 +1,35 @@
+.browse-layout {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.browse-sidebar {
+  flex-shrink: 0;
+  width: 250px;
+}
+
+.browse-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.browse-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.browse-count {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .browse-layout {
+    flex-direction: column;
+  }
+  .browse-sidebar {
+    width: 100%;
+  }
+}
