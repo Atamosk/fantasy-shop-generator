@@ -80,6 +80,9 @@ Spell descriptions from `dnd-data` total ~4.4MB raw text (before deduplication).
 - **Main bundles** (`items.json`, `scrolls.json`, `spells.json`): contain metadata only (name, level, school, price, rarity, etc.) — no descriptions. These are small and load instantly.
 - **Descriptions**: loaded on demand. When a user expands an item/spell detail view, the description is loaded from a separate `descriptions.json` file (keyed by name). This file is code-split and only fetched when needed.
 - If `descriptions.json` is still too large after deduplication, split further by category or spell level.
+- Note: `items.json` (the local dataset) does not contain descriptions. The item detail view for non-scroll items shows metadata only (name, price, rarity, weight, category, requirements). Descriptions are available only for spells/scrolls (from `dnd-data`).
+
+Artifact rarity items appear in the browse catalog but are excluded from shop generation (no template assigns Artifact weight). Artifacts are unique, world-shaping items that shouldn't appear in random shops.
 
 ### Category Mapping
 
@@ -136,6 +139,8 @@ After picking a template, the DM can optionally adjust:
 **Party level** (1-20, default 5) — shifts rarity weights. For every 4 levels above 5, shift 10% weight from Common toward rarer tiers (distributed proportionally among Uncommon/Rare/Very Rare/Legendary). For levels below 5, shift weight from rarer tiers toward Common. This ensures low-level parties see mostly common items and high-level parties see more magical gear.
 
 Example: Blacksmith template (base: Common 50%, Uncommon 35%, Rare 10%, Very Rare 5%) at party level 13 → 2 steps above baseline → shift 20% from Common. Result: Common 30%, Uncommon 42%, Rare 18%, Very Rare 10%.
+
+Note: Weight is only redistributed among tiers that already have nonzero weight in the template. Zero-weight tiers remain at zero (e.g., General Store has no Legendary weight — party level won't add one).
 
 **Town size** — scales inventory count:
 
