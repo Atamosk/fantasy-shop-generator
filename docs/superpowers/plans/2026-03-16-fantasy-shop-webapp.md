@@ -1871,7 +1871,7 @@ git commit -m "feat: add RarityBadge component"
 - [ ] **Step 2: Create `web/src/components/ItemTable.jsx`**
 
 ```jsx
-import { useState, Fragment } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import RarityBadge from './RarityBadge';
 import ItemDetail from './ItemDetail';
 import './ItemTable.css';
@@ -1889,6 +1889,12 @@ const PAGE_SIZE = 50;
 export default function ItemTable({ items, sortField, sortDirection, onSort, onReroll }) {
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [page, setPage] = useState(0);
+
+  // Reset page to 0 when items change (new filters applied)
+  useEffect(() => { setPage(0); }, [items.length]);
+  // Reset expanded row when page changes
+  useEffect(() => { setExpandedIndex(null); }, [page]);
+
   const totalPages = Math.ceil(items.length / PAGE_SIZE);
   const pagedItems = items.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
@@ -1922,7 +1928,7 @@ export default function ItemTable({ items, sortField, sortDirection, onSort, onR
       </thead>
       <tbody>
         {pagedItems.map((item, i) => (
-          <Fragment key={item.name + i}>
+          <Fragment key={`${item.name}-${item.category}-${item.price}`}>
             <tr
               className={`clickable-row${expandedIndex === i ? ' expanded' : ''}`}
               onClick={() => toggleExpand(i)}
@@ -2247,6 +2253,8 @@ export default function FilterPanel({ filters, onChange }) {
           </div>
         </div>
 
+        {/* Spell filters only shown when Scroll category is selected */}
+        {(!filters.categories?.length || filters.categories.includes('Scroll')) && (
         <div className="filter-section">
           <h3>Spell Level</h3>
           <select
@@ -2274,6 +2282,7 @@ export default function FilterPanel({ filters, onChange }) {
             ))}
           </select>
         </div>
+        )}
 
         <div className="filter-section">
           <h3>Price Range (gp)</h3>
@@ -2838,9 +2847,8 @@ export default function ShopInventory({ templateName, items, onReroll, onRerollA
 - [ ] **Step 6: Create `web/src/pages/ShopGenerator.jsx`**
 
 ```jsx
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useShopUrlState } from '../hooks/useUrlState';
-/* eslint-disable react-hooks/exhaustive-deps */
 import { generateShop, rerollItem } from '../logic/generation';
 import { TEMPLATES, TOWN_SIZES } from '../data/templates';
 import { ALL_CATEGORIES } from '../data/constants';
@@ -2899,7 +2907,7 @@ export default function ShopGenerator() {
   const [shop, setShop] = useState(null);
 
   // Generate shop when seed changes
-  useMemo(() => {
+  useEffect(() => {
     if (!template || !seed) { setShop(null); return; }
     setShop(generateShop({
       items, scrolls, template, categories: activeCategories,
@@ -3086,10 +3094,10 @@ Expected: All tests pass (categories, rarity, generation, filters, URL state).
 
 If any tests fail, fix the underlying code and re-run.
 
-- [ ] **Step 3: Commit any fixes**
+- [ ] **Step 3: Commit any fixes (skip if no changes)**
 
 ```bash
-git add web/src/ web/scripts/ web/vite.config.js web/vitest.config.js web/package.json web/package-lock.json web/index.html
+git add -u web/src/ web/scripts/
 git commit -m "fix: resolve test failures"
 ```
 
@@ -3121,11 +3129,11 @@ ls -la web/dist/assets/
 
 Verify main JS bundle is reasonable (< 500KB gzipped). Descriptions JSON should be a separate chunk.
 
-- [ ] **Step 4: Commit if any build config changes were needed**
+- [ ] **Step 4: Commit if any build config changes were needed (skip if no changes)**
 
 ```bash
-git add web/
-git commit -m "chore: verify production build"
+git add -u web/src/ web/scripts/ web/vite.config.js
+git commit -m "chore: fix build config issues"
 ```
 
 ---
@@ -3167,9 +3175,9 @@ git commit -m "chore: verify production build"
 2. Copy URL → open in new tab → same filters applied
 3. Bookmark a shop URL → reopen → same shop appears
 
-- [ ] **Step 5: Commit final state**
+- [ ] **Step 5: Commit final state (skip if no changes)**
 
 ```bash
-git add web/src/ web/scripts/ web/vite.config.js web/vitest.config.js web/package.json web/package-lock.json web/index.html
+git add -u web/src/ web/scripts/
 git commit -m "feat: complete fantasy shop generator webapp"
 ```
