@@ -28,7 +28,7 @@ All data is processed at build time and bundled into the frontend. Shareable sta
 Two independent data sources, each serving a different purpose:
 
 - **`src/data/items.json`** (1,782 items) — the primary item source. Contains price, rarity, weight, type, and base_item. This is the only source with pricing data. Sourced from web scraping. Fields: `type` ("Combat", "Utility", "Consumable", "Destroyable"), `name`, `price` (number), `base_item` (string or null), `rarity` ("Mundane", "Common", "Uncommon", "Rare", "Very Rare", "Legendary", "Artifact"), `weight` (string — may be a number like "20", or "-" for unspecified).
-- **`dnd-data` NPM package** — spell data only (15,749+ spells). Used to build the spell/scroll catalog. Item data in `dnd-data` is not used (it has 15,749 items but no pricing, messy type labels with 500+ variations, and overlaps with `items.json`).
+- **`dnd-data` NPM package** — spell data only (5,849 spells). Used to build the spell/scroll catalog. Item data in `dnd-data` is not used (it has 15,749 items but no pricing, messy type labels with 500+ variations, and overlaps with `items.json`).
 
 Note: The existing project uses `alasql` for querying. The webapp does not — all filtering and querying is plain JS (Array.filter/sort/map), which is simpler and avoids shipping a SQL engine to the browser.
 
@@ -41,6 +41,9 @@ Runs as a prebuild step (`npm run build:data` before `vite build`).
 - Normalize weight: parse numeric strings to numbers, convert `"-"` to `null`
 - Normalize rarity casing to title case
 - Map `"Mundane"` rarity to `"Common"` (Mundane items are non-magical common goods — functionally equivalent to Common for filtering and shop generation)
+- Preserve `requirements` field (contains attunement/class requirements, e.g., "Spellcaster", "Paladin") — useful for display. HTML entities (e.g., `&#39;`) are decoded to plain text.
+- Preserve source `type` field as `sourceType` ("Combat", "Utility", "Consumable", "Destroyable") — useful for secondary filtering (e.g., distinguishing consumable ammunition from permanent gear)
+- Drop `link` field (D&D Beyond URLs — not needed in the webapp, avoids external link dependencies)
 - Assign a `category` field based on `base_item` and `name` heuristics (see Category Mapping below)
 - Output: `items.json`
 
@@ -54,7 +57,7 @@ Runs as a prebuild step (`npm run build:data` before `vite build`).
 - Take deduplicated spells, merge with scroll pricing/rarity by spell level (same pricing table as existing `scrolls.js`)
 - Output: `scrolls.json`
 
-**Outputs** (written to `web/src/data/generated/`):
+**Outputs** (written to `web/src/data/generated/`, gitignored as build artifacts):
 - `items.json` — normalized, categorized items
 - `spells.json` — deduplicated spell list
 - `scrolls.json` — spell scrolls with pricing, rarity, and spell details
@@ -62,13 +65,21 @@ Runs as a prebuild step (`npm run build:data` before `vite build`).
 ### Output Schemas
 
 **Items:**
-- `name` (string), `category` (string — see below), `price` (number, gold pieces), `rarity` (string), `weight` (number or null), `base_item` (string or null)
+- `name` (string), `category` (string — see below), `price` (number, gold pieces), `rarity` (string), `weight` (number or null), `base_item` (string or null), `sourceType` (string — original type from source data), `requirements` (string or null — attunement/class requirements)
 
 **Scrolls:**
-- `name` (string, e.g., "Spell Scroll: Fireball"), `category` ("Scroll"), `price` (number), `rarity` (string), `spellLevel` (number), `spellSchool` (string), `spellName` (string), `sourceBook` (string), `description` (string)
+- `name` (string, e.g., "Spell Scroll: Fireball"), `category` ("Scroll"), `price` (number), `rarity` (string), `spellLevel` (number), `spellSchool` (string), `spellName` (string), `sourceBook` (string)
 
 **Spells** (for the browse catalog, not for shop generation):
-- `name` (string), `level` (number), `school` (string), `sourceBook` (string), `description` (string)
+- `name` (string), `level` (number), `school` (string), `sourceBook` (string)
+
+### Bundle Size Strategy
+
+Spell descriptions from `dnd-data` total ~4.4MB raw text (before deduplication). Including full descriptions in the main bundle would significantly impact load time. Strategy:
+
+- **Main bundles** (`items.json`, `scrolls.json`, `spells.json`): contain metadata only (name, level, school, price, rarity, etc.) — no descriptions. These are small and load instantly.
+- **Descriptions**: loaded on demand. When a user expands an item/spell detail view, the description is loaded from a separate `descriptions.json` file (keyed by name). This file is code-split and only fetched when needed.
+- If `descriptions.json` is still too large after deduplication, split further by category or spell level.
 
 ### Category Mapping
 
@@ -88,6 +99,8 @@ Items from `items.json` are assigned a `category` based on `base_item` keyword m
 | Adventuring Gear | (everything else) |
 
 Items without a `base_item` are categorized by `name` keyword matching using the same rules, falling back to "Adventuring Gear."
+
+Note: The source `type` field ("Combat", "Utility", "Consumable", "Destroyable") is preserved as `sourceType` but is NOT used for category assignment. Most Consumable/Destroyable items are ammunition variants that get correctly categorized via their `base_item` (Arrow, Bolt, etc.). The `sourceType` is available for optional secondary filtering in the UI.
 
 This mapping is defined as a data table in the build script, not hardcoded logic, so it's easy to adjust as we review the output.
 
@@ -121,6 +134,8 @@ Predefined shop types, each defining:
 After picking a template, the DM can optionally adjust:
 
 **Party level** (1-20, default 5) — shifts rarity weights. For every 4 levels above 5, shift 10% weight from Common toward rarer tiers (distributed proportionally among Uncommon/Rare/Very Rare/Legendary). For levels below 5, shift weight from rarer tiers toward Common. This ensures low-level parties see mostly common items and high-level parties see more magical gear.
+
+Example: Blacksmith template (base: Common 50%, Uncommon 35%, Rare 10%, Very Rare 5%) at party level 13 → 2 steps above baseline → shift 20% from Common. Result: Common 30%, Uncommon 42%, Rare 18%, Very Rare 10%.
 
 **Town size** — scales inventory count:
 
@@ -182,7 +197,7 @@ Filter state in query params:
 
 Seed-based encoding — template, parameters, and random seed in the URL:
 ```
-/shop?template=blacksmith&level=5&town=large&seed=a7f3b2
+/shop?template=blacksmith&level=5&town=city&seed=a7f3b2
 ```
 
 The deterministic generation algorithm reproduces the same shop from the same seed, so links are stable and short.
