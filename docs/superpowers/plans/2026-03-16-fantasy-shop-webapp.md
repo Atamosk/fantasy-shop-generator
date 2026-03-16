@@ -789,10 +789,11 @@ describe('adjustRarityWeights', () => {
   it('shifts weight toward rare at high levels', () => {
     const result = adjustRarityWeights(baseWeights, 13);
     // 2 steps above baseline → shift 20% from Common
+    // Distributed proportionally: Uncommon gets 35/50 share, Rare gets 10/50, Very Rare gets 5/50
     expect(result.Common).toBe(30);
-    expect(result.Uncommon).toBe(42);
-    expect(result.Rare).toBe(18);
-    expect(result['Very Rare']).toBe(10);
+    expect(result.Uncommon).toBe(49); // 35 + round(20 * 35/50) = 35 + 14
+    expect(result.Rare).toBe(14);     // 10 + round(20 * 10/50) = 10 + 4
+    expect(result['Very Rare']).toBe(7); // 5 + remainder(20 - 14 - 4) = 5 + 2
   });
 
   it('shifts weight toward common at low levels', () => {
