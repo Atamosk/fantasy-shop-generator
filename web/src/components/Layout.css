@@ -1,0 +1,38 @@
+.layout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.layout-logo {
+  color: var(--color-accent);
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.layout-nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.layout-nav a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.15s;
+}
+
+.layout-nav a:hover,
+.layout-nav a.active {
+  color: var(--color-accent);
+}
+
+.layout-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
