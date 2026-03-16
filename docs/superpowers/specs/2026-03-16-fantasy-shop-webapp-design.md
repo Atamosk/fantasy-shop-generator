@@ -117,7 +117,7 @@ The data is static. Processing at build time means zero load-time cost, smaller 
 
 Predefined shop types, each defining:
 - Name and flavor text
-- Item category pools (which categories to draw from)
+- Default item category selections (which categories are checked by default)
 - Base rarity weights (probability distribution across rarities)
 - Base inventory size (number of items)
 
@@ -135,6 +135,8 @@ Predefined shop types, each defining:
 ### Tuning Parameters
 
 After picking a template, the DM can optionally adjust:
+
+**Item categories** — the template's default categories are shown as checkboxes (all checked by default). The DM can uncheck categories to exclude them or check additional categories to include them. For example, selecting Armorer then unchecking Shield, or selecting Alchemist then checking Adventuring Gear. The full list of available categories is always shown; the template just sets the initial selection. Category overrides are encoded in the URL for shareable links (e.g., `&categories=armor,weapon`).
 
 **Party level** (1-20, default 5) — shifts rarity weights. For every 4 levels above 5, shift 10% weight from Common toward rarer tiers (distributed proportionally among Uncommon/Rare/Very Rare/Legendary). For levels below 5, shift weight from rarer tiers toward Common. This ensures low-level parties see mostly common items and high-level parties see more magical gear.
 
@@ -156,7 +158,7 @@ Note: Weight is only redistributed among tiers that already have nonzero weight 
 
 ### Generation Algorithm
 
-1. Start with the template's category pools and base rarity weights
+1. Start with the user's selected categories (template defaults with any overrides) and base rarity weights
 2. Adjust rarity weights based on party level
 3. Calculate inventory size: template base size * town size multiplier (rounded, minimum 3)
 4. Build the eligible item pool: all items matching the template's categories, filtered by budget cap if set
