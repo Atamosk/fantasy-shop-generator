@@ -23,31 +23,73 @@ All data is processed at build time and bundled into the frontend. Shareable sta
 
 ## Data Pipeline
 
+### Data Sources
+
+Two independent data sources, each serving a different purpose:
+
+- **`src/data/items.json`** (1,782 items) — the primary item source. Contains price, rarity, weight, type, and base_item. This is the only source with pricing data. Sourced from web scraping. Fields: `type` ("Combat", "Utility", "Consumable", "Destroyable"), `name`, `price` (number), `base_item` (string or null), `rarity` ("Mundane", "Common", "Uncommon", "Rare", "Very Rare", "Legendary", "Artifact"), `weight` (string — may be a number like "20", or "-" for unspecified).
+- **`dnd-data` NPM package** — spell data only (15,749+ spells). Used to build the spell/scroll catalog. Item data in `dnd-data` is not used (it has 15,749 items but no pricing, messy type labels with 500+ variations, and overlaps with `items.json`).
+
+Note: The existing project uses `alasql` for querying. The webapp does not — all filtering and querying is plain JS (Array.filter/sort/map), which is simpler and avoids shipping a SQL engine to the browser.
+
 ### Build-time processing (`web/scripts/build-data.js`)
 
-Runs as a prebuild step (`npm run build:data` before `vite build`). Processes raw data sources into optimized JSON for the frontend.
+Runs as a prebuild step (`npm run build:data` before `vite build`).
 
-**Inputs:**
-- `src/data/items.json` — local item dataset (weapons, armor, potions, gear)
-- `dnd-data` NPM package — spells collection
+**Item processing:**
+- Read `src/data/items.json`
+- Normalize weight: parse numeric strings to numbers, convert `"-"` to `null`
+- Normalize rarity casing to title case
+- Map `"Mundane"` rarity to `"Common"` (Mundane items are non-magical common goods — functionally equivalent to Common for filtering and shop generation)
+- Assign a `category` field based on `base_item` and `name` heuristics (see Category Mapping below)
+- Output: `items.json`
 
-**Processing:**
-- **Items:** Normalize fields (weight as numbers, consistent rarity casing), categorize by type (weapons, armor, potions, adventuring gear, etc.)
-- **Spells:** Deduplicate using book priority ordering (later books override earlier), preserve source book attribution
-- **Scrolls:** Merge spell data with scroll pricing/rarity by spell level
+**Spell processing:**
+- Read `dnd-data` spells
+- Deduplicate using book priority ordering (later books override earlier), using the same logic as the existing `spells.js`
+- Preserve source book attribution
+- Output: `spells.json`
 
-**Outputs** (written to `web/src/data/` or `web/public/data/`):
+**Scroll processing:**
+- Take deduplicated spells, merge with scroll pricing/rarity by spell level (same pricing table as existing `scrolls.js`)
+- Output: `scrolls.json`
+
+**Outputs** (written to `web/src/data/generated/`):
 - `items.json` — normalized, categorized items
 - `spells.json` — deduplicated spell list
 - `scrolls.json` — spell scrolls with pricing, rarity, and spell details
 
-**Output schema — common fields:**
-- `name`, `type` (category), `price`, `rarity`, `weight`
+### Output Schemas
 
-**Category-specific fields:**
-- Weapons: `damage`, `properties`
-- Armor: `AC`, `stealthDisadvantage`
-- Scrolls: `spellLevel`, `spellSchool`, `spellName`, `sourceBook`, `description`
+**Items:**
+- `name` (string), `category` (string — see below), `price` (number, gold pieces), `rarity` (string), `weight` (number or null), `base_item` (string or null)
+
+**Scrolls:**
+- `name` (string, e.g., "Spell Scroll: Fireball"), `category` ("Scroll"), `price` (number), `rarity` (string), `spellLevel` (number), `spellSchool` (string), `spellName` (string), `sourceBook` (string), `description` (string)
+
+**Spells** (for the browse catalog, not for shop generation):
+- `name` (string), `level` (number), `school` (string), `sourceBook` (string), `description` (string)
+
+### Category Mapping
+
+Items from `items.json` are assigned a `category` based on `base_item` keyword matching. The build script maps base_item values to categories:
+
+| Category | base_item matches (contains, case-insensitive) |
+|----------|------------------------------------------------|
+| Weapon | Sword, Axe, Dagger, Bow, Mace, Hammer, Spear, Crossbow, Glaive, Halberd, Pike, Staff, Whip, Flail, Morningstar, Trident, Lance, Maul, Rapier, Scimitar, Javelin, Club, Dart, Sling, Blowgun, Boomerang |
+| Armor | Breastplate, Chain Mail, Chain Shirt, Half Plate, Plate, Ring Mail, Scale Mail, Splint, Studded Leather, Leather, Padded, Hide |
+| Shield | Shield |
+| Potion | Potion, Substance |
+| Ammunition | Arrow, Bolt, Bullet, Needle |
+| Wand | Wand |
+| Ring | Ring |
+| Scroll | Scroll |
+| Wondrous Item | (items with rarity Uncommon+ that don't match other categories) |
+| Adventuring Gear | (everything else) |
+
+Items without a `base_item` are categorized by `name` keyword matching using the same rules, falling back to "Adventuring Gear."
+
+This mapping is defined as a data table in the build script, not hardcoded logic, so it's easy to adjust as we review the output.
 
 ### Why build-time?
 
@@ -58,34 +100,52 @@ The data is static. Processing at build time means zero load-time cost, smaller 
 ### Shop Templates
 
 Predefined shop types, each defining:
-- Name and flavor text (e.g., "Blacksmith — Weapons, armor, and shields")
+- Name and flavor text
 - Item category pools (which categories to draw from)
-- Rarity distribution (e.g., village blacksmith skews Common/Uncommon)
-- Price range defaults
-- Inventory size range (min/max items)
+- Base rarity weights (probability distribution across rarities)
+- Base inventory size (number of items)
 
 **Starting templates:**
-- **Blacksmith** — weapons, armor, shields
-- **Alchemist** — potions, poisons, alchemical supplies
-- **General Store** — adventuring gear, mundane equipment
-- **Arcane Shop** — spell scrolls, wands, magical curiosities
-- **Armorer** — armor, shields (deeper inventory than blacksmith)
-- **Wandering Merchant** — mixed bag, random categories
+
+| Template | Categories | Base Rarity Weights | Base Size |
+|----------|-----------|---------------------|-----------|
+| Blacksmith | Weapon, Armor, Shield | Common 50%, Uncommon 35%, Rare 10%, Very Rare 5% | 15 |
+| Alchemist | Potion | Common 40%, Uncommon 35%, Rare 20%, Very Rare 5% | 12 |
+| General Store | Adventuring Gear, Ammunition | Common 70%, Uncommon 25%, Rare 5% | 20 |
+| Arcane Shop | Scroll, Wand, Ring, Wondrous Item | Common 30%, Uncommon 35%, Rare 25%, Very Rare 8%, Legendary 2% | 10 |
+| Armorer | Armor, Shield | Common 45%, Uncommon 35%, Rare 15%, Very Rare 5% | 12 |
+| Wandering Merchant | (all categories) | Common 50%, Uncommon 30%, Rare 15%, Very Rare 5% | 8 |
 
 ### Tuning Parameters
 
 After picking a template, the DM can optionally adjust:
-- **Party level** — shifts rarity distribution (higher level = rarer items more likely)
-- **Town size** — affects inventory size and price ranges (hamlet vs. metropolis)
-- **Budget cap** — maximum price per item in gold
+
+**Party level** (1-20, default 5) — shifts rarity weights. For every 4 levels above 5, shift 10% weight from Common toward rarer tiers (distributed proportionally among Uncommon/Rare/Very Rare/Legendary). For levels below 5, shift weight from rarer tiers toward Common. This ensures low-level parties see mostly common items and high-level parties see more magical gear.
+
+**Town size** — scales inventory count:
+
+| Town Size | Inventory Multiplier | Description |
+|-----------|---------------------|-------------|
+| Hamlet | 0.5x | Tiny settlement, very limited stock |
+| Village | 0.75x | Small community |
+| Town | 1.0x (default) | Standard market |
+| City | 1.5x | Large settlement, broad selection |
+| Metropolis | 2.0x | Major hub, extensive inventory |
+
+**Budget cap** (optional, in gold) — filters out any item above this price before generation. No default.
 
 ### Generation Algorithm
 
-1. Start with the template's category pools and rarity distribution
-2. Apply parameter adjustments (party level shifts rarity weights, town size scales inventory count)
-3. For each inventory slot: weighted random pick from eligible items
-4. De-duplicate (no two of the same item)
-5. Sort by category, then by price
+1. Start with the template's category pools and base rarity weights
+2. Adjust rarity weights based on party level
+3. Calculate inventory size: template base size * town size multiplier (rounded, minimum 3)
+4. Build the eligible item pool: all items matching the template's categories, filtered by budget cap if set
+5. For each inventory slot:
+   a. Roll a rarity tier using the adjusted weights
+   b. Pick a random item from the eligible pool matching that rarity
+   c. If no items exist at that rarity, fall back to the nearest available rarity
+6. De-duplicate (no two of the same item; if a duplicate is rolled, re-roll up to 3 times, then skip the slot)
+7. Sort by category, then by price
 
 ### Re-roll
 
@@ -102,7 +162,7 @@ The algorithm uses a seeded PRNG (e.g., `seedrandom` library). Given the same te
 - **Search bar** at top — filters by name, instant
 - **Filter panel** with:
   - Category (weapons, armor, potions, scrolls, etc.) — multi-select
-  - Rarity (Common through Legendary) — multi-select
+  - Rarity (Common, Uncommon, Rare, Very Rare, Legendary, Artifact) — multi-select
   - Price range — min/max inputs or slider
   - For scrolls: spell level, spell school
 - **Results table:** name, category, price, rarity, weight
@@ -126,6 +186,10 @@ Seed-based encoding — template, parameters, and random seed in the URL:
 ```
 
 The deterministic generation algorithm reproduces the same shop from the same seed, so links are stable and short.
+
+### Invalid URL Parameters
+
+Invalid or unrecognized URL parameter values silently fall back to defaults (e.g., `?rarity=SuperRare` is ignored, `?level=abc` falls back to default level). No error messages — the UI just shows the default state.
 
 ### Routes
 
@@ -182,7 +246,7 @@ Modern layout and usability with fantasy accent elements:
 - **Amber/gold accent color** for highlights, prices, interactive elements
 - **Clean sans-serif typography** for readability
 - **Fantasy touches:** warm color palette, thematic category icons, subtle border accents (e.g., gold left-border on alternating rows)
-- **Rarity colors:** consistent color coding (Common=gray, Uncommon=green, Rare=blue, Very Rare=purple, Legendary=orange/gold)
+- **Rarity colors:** consistent color coding (Common=gray, Uncommon=green, Rare=blue, Very Rare=purple, Legendary=orange/gold, Artifact=red)
 
 ## Responsive Design
 
