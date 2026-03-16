@@ -1,0 +1,56 @@
+.home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.home h1 {
+  font-size: 2.25rem;
+  color: var(--color-accent);
+  margin-bottom: 0.75rem;
+}
+
+.home .subtitle {
+  color: var(--color-text-muted);
+  font-size: 1.125rem;
+  margin-bottom: 3rem;
+  max-width: 500px;
+}
+
+.home-actions {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.home-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 2.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--color-text);
+  transition: border-color 0.15s, transform 0.15s;
+  width: 260px;
+}
+
+.home-card:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.home-card h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.home-card p {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
