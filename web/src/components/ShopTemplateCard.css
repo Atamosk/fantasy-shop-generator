@@ -1,0 +1,36 @@
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.template-card {
+  padding: 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.template-card:hover {
+  border-color: var(--color-accent-dim);
+  transform: translateY(-1px);
+}
+
+.template-card.selected {
+  border-color: var(--color-accent);
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.template-card h3 {
+  font-size: 1rem;
+  color: var(--color-accent);
+  margin-bottom: 0.25rem;
+}
+
+.template-card p {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}

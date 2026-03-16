@@ -1,0 +1,48 @@
+.shop-inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.shop-inventory-header h2 {
+  font-size: 1.25rem;
+  color: var(--color-accent);
+}
+
+.shop-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.shop-btn {
+  padding: 0.5rem 1rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: border-color 0.15s;
+}
+
+.shop-btn:hover {
+  border-color: var(--color-accent);
+}
+
+.shop-link {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: 0.75rem;
+}
+
+.shop-link input {
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  margin-top: 0.25rem;
+}
