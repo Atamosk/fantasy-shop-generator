@@ -72,7 +72,7 @@ export default function FilterPanel({ filters, onChange }) {
         </div>
 
         {/* Spell filters only shown when Scroll category is selected */}
-        {(!filters.categories?.length || filters.categories.includes('Scroll')) && (
+        {(!filters.categories?.length || filters.categories.includes('Scroll')) && (<>
         <div className="filter-section">
           <h3>Spell Level</h3>
           <select
@@ -100,7 +100,7 @@ export default function FilterPanel({ filters, onChange }) {
             ))}
           </select>
         </div>
-        )}
+        </>)}
 
         <div className="filter-section">
           <h3>Price Range (gp)</h3>
